@@ -1,213 +1,207 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<%@ page import="java.time.LocalDate"%>
+<%@ page import="java.time.temporal.ChronoUnit"%>
+<%@ page import="com.Entity.AddEventEntity"%>
 
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Explore Events</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>All Events</title>
+
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+	rel="stylesheet">
 
 <style>
-
-/* ===== BODY ===== */
-body{
-    background: #F1F5F9;
-    font-family: 'Segoe UI', sans-serif;
+body {
+	background: #f5f7fa;
+	font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ===== SECTION TITLE ===== */
-.page-title{
-    font-weight:700;
-    color:#1E293B;
+/* clickable card */
+.card-link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+	height: 100%;
 }
 
-/* ===== EVENT CARD ===== */
-.event-card{
-    background: #ffffff;
-    border-radius:20px;
-    border:none;
-    overflow:hidden;
-    transition:0.3s ease;
-    box-shadow:0 8px 20px rgba(0,0,0,0.05);
+/* event card */
+.event-card {
+	background: white;
+	border-radius: 14px;
+	padding: 20px;
+	padding-right: 110px;
+	min-height: 240px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	transition: all .25s ease;
+	border: 1px solid #f0f0f0;
 }
 
-.event-card:hover{
-    transform:translateY(-8px);
-    box-shadow:0 15px 35px rgba(99,102,241,0.25);
+.event-card:hover {
+	transform: translateY(-6px);
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
-/* ===== BANNER ===== */
-.banner{
-    height:180px;
-    overflow:hidden;
+/* event logo */
+.event-logo {
+	position: absolute;
+	top: 18px;
+	right: 18px;
+	width: 70px;
+	height: 70px;
+	object-fit: contain;
+	background: white;
+	border-radius: 10px;
+	padding: 6px;
+	border: 1px solid #eee;
 }
 
-.banner img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
+/* event title */
+.event-card h5 {
+	font-size: 18px;
+	font-weight: 600;
+	margin-bottom: 6px;
 }
 
-/* ===== LOGO ===== */
-.logo{
-    width:70px;
-    height:70px;
-    border-radius:50%;
-    border:4px solid #fff;
-    margin-top:-35px;
-    background:#fff;
-    overflow:hidden;
+/* meta text */
+.meta {
+	font-size: 14px;
+	color: #555;
+	margin-bottom: 4px;
 }
 
-.logo img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
+/* tags container */
+.tags-container {
+	display: flex;
+	gap: 6px;
+	flex-wrap: nowrap;
+	overflow: hidden;
+	margin-top: 6px;
 }
 
-/* ===== TITLE ===== */
-.event-title{
-    font-weight:600;
-    color:#1E293B;
+/* tag style */
+.tag {
+	background: #eef2ff;
+	color: #4f46e5;
+	padding: 4px 10px;
+	font-size: 12px;
+	border-radius: 20px;
+	white-space: nowrap;
+	font-weight: 500;
 }
 
-/* ===== DESCRIPTION ===== */
-.event-desc{
-    color:#64748B;
-    font-size:14px;
+/* bottom row */
+.bottom-row {
+	margin-top: auto;
+	font-size: 14px;
+	color: #555;
 }
 
-/* ===== STATUS BADGE ===== */
-.status-badge{
-    padding:6px 14px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:600;
+.bottom-row span {
+	font-weight: 600;
+	color: #1a7f37;
 }
-
-.status-active{
-    background:#DCFCE7;
-    color:#16A34A;
-}
-
-.status-upcoming{
-    background:#FEF3C7;
-    color:#D97706;
-}
-
-.status-completed{
-    background:#E2E8F0;
-    color:#475569;
-}
-
-/* ===== PRIZE SECTION ===== */
-.prize{
-    background: linear-gradient(to right, #6366F1, #8B5CF6);
-    color:white;
-    padding:12px;
-    font-weight:600;
-    font-size:15px;
-}
-
-/* ===== ICON ROW ===== */
-.icon-row{
-    font-size:14px;
-    color:#475569;
-}
-
-/* ===== PAGINATION ===== */
-.page-link{
-    color:#6366F1;
-}
-.page-item.active .page-link{
-    background:#6366F1;
-    border-color:#6366F1;
-}
-
 </style>
+
 </head>
 
 <body>
 
-<div class="container py-5">
+	<div class="container mt-4">
 
-    <h3 class="text-center page-title mb-5">🚀 Explore Hackathons</h3>
+		<h3 class="mb-4">All Events</h3>
 
-    <div class="row">
+		<div class="row">
 
-        <c:forEach var="e" items="${eventList}">
+			<c:forEach var="event" items="${eventList}">
 
-            <div class="col-lg-4 col-md-6 mb-4">
+				<%
+				AddEventEntity e = (AddEventEntity) pageContext.getAttribute("event");
 
-                <div class="card event-card">
+				LocalDate today = LocalDate.now();
+				LocalDate lastDate = e.getLastDate();
 
-                    <!-- Banner -->
-                    <div class="banner">
-                        <img src="${e.bannerImage}">
-                    </div>
+				long daysLeft = ChronoUnit.DAYS.between(today, lastDate);
+				%>
 
-                    <div class="card-body text-center">
+				<div class="col-md-6 mb-4">
 
-                        <!-- Logo -->
-                        <div class="logo mx-auto">
-                            <img src="${e.logoImage}">
-                        </div>
+					<a href="eventDetails?eventId=${event.eventId}" class="card-link">
 
-                        <h5 class="event-title mt-3">
-                            ${e.title}
-                        </h5>
+						<div class="event-card">
 
-                        <p class="event-desc">
-                            ${e.shortDescription}
-                        </p>
+							<img src="${event.eventImage}" class="event-logo">
 
-                        <!-- Icons -->
-                        <div class="d-flex justify-content-between px-4 icon-row mb-3">
-                            <span>👥 ${e.participantsCount}</span>
-                            <span>❤️ ${e.likesCount}</span>
-                        </div>
+							<h5>${event.eventTitle}</h5>
 
-                        <!-- Status -->
-                        <c:choose>
-                            <c:when test="${e.status == 'ACTIVE'}">
-                                <span class="status-badge status-active">
-                                    Active
-                                </span>
-                            </c:when>
+							<p class="meta mb-1">
+								<b>${event.organizationName}</b>
+							</p>
 
-                            <c:when test="${e.status == 'UPCOMING'}">
-                                <span class="status-badge status-upcoming">
-                                    Upcoming
-                                </span>
-                            </c:when>
+							<p class="meta mb-1">${event.participationType}</p>
 
-                            <c:otherwise>
-                                <span class="status-badge status-completed">
-                                    Completed
-                                </span>
-                            </c:otherwise>
-                        </c:choose>
+							<p class="meta mb-2">📍 ${event.location}</p>
 
-                    </div>
+							<div class="tags-container">
 
-                    <!-- Prize -->
-                    <div class="prize text-center">
-                        Prize: ${e.prizeAmount} ${e.currency}
-                    </div>
+								<c:set var="tagCount" value="0" />
 
-                </div>
+								<c:forTokens items="${event.skillTags}" delims="," var="tag">
 
-            </div>
+									<c:set var="tagCount" value="${tagCount + 1}" />
 
-        </c:forEach>
+									<c:if test="${tagCount <= 3}">
+										<span class="tag">${tag}</span>
+									</c:if>
 
-    </div>
+								</c:forTokens>
 
-</div>
+								<c:if test="${tagCount > 3}">
+									<span class="tag">+${tagCount-3} more</span>
+								</c:if>
+
+							</div>
+
+							<div class="bottom-row">
+
+								<p class="meta mb-0">
+
+									Posted: ${event.postedDate} <span class="text-success ms-2">
+
+										<%=daysLeft%> Days Left
+
+									</span>
+
+								</p>
+
+							</div>
+
+						</div>
+
+					</a>
+
+				</div>
+
+			</c:forEach>
+
+		</div>
+
+	</div>
 
 </body>
+
 </html>

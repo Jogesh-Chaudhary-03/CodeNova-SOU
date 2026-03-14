@@ -1,5 +1,6 @@
 package com.Entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
@@ -14,83 +15,68 @@ public class AddEventEntity {
 	
 	 	@Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Integer eventId;
-	    private String title;
-	    private String shortDescription;
-	    private String bannerImage;
-	    private String logoImage;
-	    private Double prizeAmount;
-	    private String currency;
-	    private Integer participantsCount = 0;
-	    private Integer likesCount = 0;
-	    private String status;  // UPCOMING / ACTIVE / COMPLETED
-	    private LocalDateTime createdAt;
-	        
-	    
+	 	private Integer eventId;
+	    private String eventTitle;
+	    private String organizationName;
+	    private String participationType;   // Individual / Team
+	    private String location;            // Online / Ahmedabad / Delhi
+	    private String skillTags;           // UI Design, Frontend etc
+	    private LocalDate postedDate;
+	    private LocalDate lastDate;         // registration last date
+	    private String eventImage;
 		public Integer getEventId() {
 			return eventId;
 		}
 		public void setEventId(Integer eventId) {
 			this.eventId = eventId;
 		}
-		public String getTitle() {
-			return title;
+		public String getEventTitle() {
+			return eventTitle;
 		}
-		public void setTitle(String title) {
-			this.title = title;
+		public void setEventTitle(String eventTitle) {
+			this.eventTitle = eventTitle;
 		}
-		public String getShortDescription() {
-			return shortDescription;
+		public String getOrganizationName() {
+			return organizationName;
 		}
-		public void setShortDescription(String shortDescription) {
-			this.shortDescription = shortDescription;
+		public void setOrganizationName(String organizationName) {
+			this.organizationName = organizationName;
 		}
-		public String getBannerImage() {
-			return bannerImage;
+		public String getParticipationType() {
+			return participationType;
 		}
-		public void setBannerImage(String bannerImage) {
-			this.bannerImage = bannerImage;
+		public void setParticipationType(String participationType) {
+			this.participationType = participationType;
 		}
-		public String getLogoImage() {
-			return logoImage;
+		public String getLocation() {
+			return location;
 		}
-		public void setLogoImage(String logoImage) {
-			this.logoImage = logoImage;
+		public void setLocation(String location) {
+			this.location = location;
 		}
-		public Double getPrizeAmount() {
-			return prizeAmount;
+		public String getSkillTags() {
+			return skillTags;
 		}
-		public void setPrizeAmount(Double prizeAmount) {
-			this.prizeAmount = prizeAmount;
+		public void setSkillTags(String skillTags) {
+			this.skillTags = skillTags;
 		}
-		public String getCurrency() {
-			return currency;
+		public LocalDate getPostedDate() {
+			return postedDate;
 		}
-		public void setCurrency(String currency) {
-			this.currency = currency;
+		public void setPostedDate(LocalDate postedDate) {
+			this.postedDate = postedDate;
 		}
-		public Integer getParticipantsCount() {
-			return participantsCount;
+		public LocalDate getLastDate() {
+			return lastDate;
 		}
-		public void setParticipantsCount(Integer participantsCount) {
-			this.participantsCount = participantsCount;
+		public void setLastDate(LocalDate lastDate) {
+			this.lastDate = lastDate;
 		}
-		public Integer getLikesCount() {
-			return likesCount;
+		public String getEventImage() {
+			return eventImage;
 		}
-		public void setLikesCount(Integer likesCount) {
-			this.likesCount = likesCount;
+		public void setEventImage(String eventImage) {
+			this.eventImage = eventImage;
 		}
-		public String getStatus() {
-			return status;
-		}
-		public void setStatus(String status) {
-			this.status = status;
-		}
-		public LocalDateTime getCreatedAt() {
-			return createdAt;
-		}
-		public void setCreatedAt(LocalDateTime createdAt) {
-			this.createdAt = createdAt;
-		}
+	    
 }
