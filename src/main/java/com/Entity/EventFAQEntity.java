@@ -1,5 +1,6 @@
 package com.Entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,7 +15,9 @@ public class EventFAQEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer faqId;
     private Integer eventId;
+    @Column(columnDefinition = "TEXT")
     private String question;
+    @Column(columnDefinition = "TEXT")
     private String answer;
 	public Integer getFaqId() {
 		return faqId;

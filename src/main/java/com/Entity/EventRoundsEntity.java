@@ -1,5 +1,6 @@
 package com.Entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,6 +16,7 @@ public class EventRoundsEntity {
 	private Integer roundId;
     private Integer eventId;
     private String roundName;
+    @Column(columnDefinition = "TEXT")
     private String roundDescription;
 	public Integer getRoundId() {
 		return roundId;

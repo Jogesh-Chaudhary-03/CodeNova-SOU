@@ -1,5 +1,7 @@
 package com.Entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,8 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="signup")
-public class SignupEntity {	
+@Table(name = "user")
+public class UserEntity {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +21,10 @@ public class SignupEntity {
     private String mobileNumber;
     private String gender;
     private String password;
+    //private String profilePic;
+    private LocalDate createdAt;  
+	private String role; //admin , participant , judge
+    private Boolean active;
     
     public Integer getId() {
 		return id;
@@ -62,5 +68,22 @@ public class SignupEntity {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	public LocalDate getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(LocalDate createdAt) {
+		this.createdAt = createdAt;
+	}
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}
+	public Boolean getActive() {
+		return active;
+	}
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
 }
-	

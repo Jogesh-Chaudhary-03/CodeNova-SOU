@@ -89,15 +89,23 @@ public class AddEventController {
 		return "ListEvent";
 	}
 	
-	@GetMapping("/listEventDetails")
-	public String listEventDetails(Model model) {
+//	@GetMapping("/listEventDetails")
+	//public String listEventDetails(Model model) {
 
 	    // Fetch complete EventDetails entities (with text fields)
-	    List<EventDetailsEntity> event = eventDetailsRepository.findAll();
+	    //List<EventDetailsEntity> event = eventDetailsRepository.findAll();
 
-	    model.addAttribute("event", event); // List of entities
-	    return "ListEventDetails"; // JSP name
-	}
+	    //model.addAttribute("event", event); // List of entities
+	  //  return "ListEventDetails"; // JSP name
+	//}
 	
+	@GetMapping("/listEventDetails/{id}")
+	public String listEventDetails(@PathVariable Integer id, Model model) {
+	    model.addAttribute("event", addEventRepository.findById(id).orElse(null));
+	    model.addAttribute("eventDetail", eventDetailsRepository.findByEventId(id));
+	    model.addAttribute("rounds", eventRoundsRepository.findByEventId(id));
+	    model.addAttribute("faqs", eventFAQRepository.findByEventId(id));
+	    return "ListEventDetails";
+	}
 	
 }
