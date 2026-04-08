@@ -15,7 +15,7 @@ public class HomeController {
 	
 	@Autowired
 	AddEventRepository addEventRepository;
-	@GetMapping(value = {"home","/"})
+	@GetMapping(value = {"home","Home","/"})
 	public String HomePage(Model model) {
 	    List<AddEventEntity> eventList = addEventRepository.findAll();
 	    model.addAttribute("eventList", eventList);

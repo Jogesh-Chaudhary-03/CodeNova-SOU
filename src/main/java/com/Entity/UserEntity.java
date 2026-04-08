@@ -21,7 +21,7 @@ public class UserEntity {
     private String mobileNumber;
     private String gender;
     private String password;
-    //private String profilePic;
+    private String profilePic;
     private LocalDate createdAt;  
 	private String role; //admin , participant , judge
     private Boolean active;
@@ -86,4 +86,11 @@ public class UserEntity {
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
+	public String getProfilePic() {
+		return profilePic;
+	}
+	public void setProfilePic(String profilePic) {
+		this.profilePic = profilePic;
+	}
+	
 }

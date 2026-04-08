@@ -14,9 +14,10 @@ public class ParticipantsEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer participantId;
     private Integer eventId;
-    private Integer id;
+    private Integer userId;
     private String teamName;
     private String teamLeader;
+    private String participationType;
 	public Integer getParticipantId() {
 		return participantId;
 	}
@@ -29,11 +30,12 @@ public class ParticipantsEntity {
 	public void setEventId(Integer eventId) {
 		this.eventId = eventId;
 	}
-	public Integer getId() {
-		return id;
+	
+	public Integer getUserId() {
+		return userId;
 	}
-	public void setId(Integer id) {
-		this.id = id;
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
 	public String getTeamName() {
 		return teamName;
@@ -47,5 +49,12 @@ public class ParticipantsEntity {
 	public void setTeamLeader(String teamLeader) {
 		this.teamLeader = teamLeader;
 	}
+	public String getParticipationType() {
+		return participationType;
+	}
+	public void setParticipationType(String participationType) {
+		this.participationType = participationType;
+	}
+	
     
 }
