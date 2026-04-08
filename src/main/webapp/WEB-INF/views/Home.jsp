@@ -357,6 +357,81 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 }
 .nav-btn-outline:hover{border-color:var(--pri);color:var(--pri);background:var(--bg2)}
 
+/* ── PROFILE AVATAR + DROPDOWN ── */
+.profile-wrap{position:relative}
+.profile-avatar{
+  width:38px;height:38px;border-radius:50%;
+  object-fit:cover;cursor:pointer;
+  border:2.5px solid var(--pri-lt);
+  box-shadow:0 2px 8px rgba(79,70,229,.2);
+  transition:border-color .18s,transform .18s;
+  display:block;
+}
+.profile-avatar:hover{border-color:var(--pri);transform:scale(1.05)}
+
+/* fallback avatar (no pic) */
+.profile-avatar-ph{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,var(--pri),var(--acc));
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;color:#fff;
+  cursor:pointer;
+  border:2.5px solid var(--pri-lt);
+  box-shadow:0 2px 8px rgba(79,70,229,.2);
+  transition:border-color .18s,transform .18s;
+  user-select:none;
+}
+.profile-avatar-ph:hover{border-color:var(--pri);transform:scale(1.05)}
+
+.profile-dropdown{
+  position:absolute;top:calc(100% + 10px);right:0;
+  background:var(--white);
+  border:1.5px solid var(--line);
+  border-radius:14px;
+  box-shadow:0 8px 32px rgba(79,70,229,.14),0 2px 8px rgba(0,0,0,.06);
+  min-width:200px;
+  overflow:hidden;
+  opacity:0;pointer-events:none;transform:translateY(6px);
+  transition:opacity .18s,transform .18s;
+  z-index:999;
+}
+.profile-dropdown.open{opacity:1;pointer-events:auto;transform:translateY(0)}
+
+/* user info top */
+.pd-user{
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg);
+}
+.pd-user-avatar{
+  width:36px;height:36px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--pri-lt);flex-shrink:0;
+}
+.pd-user-avatar-ph{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--pri),var(--acc));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#fff;flex-shrink:0;
+}
+.pd-name{font-size:13px;font-weight:800;color:var(--ink);line-height:1.2}
+.pd-email{font-size:11px;color:var(--muted);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+
+/* dropdown items */
+.pd-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;font-size:13.5px;font-weight:600;
+  color:var(--ink2);text-decoration:none;cursor:pointer;
+  transition:background .14s,color .14s;border:none;background:none;width:100%;text-align:left;
+}
+.pd-item:hover{background:var(--bg2);color:var(--pri)}
+.pd-item.logout{color:var(--red)}
+.pd-item.logout:hover{background:var(--red-bg,#fee2e2);color:var(--red)}
+.pd-item svg{flex-shrink:0;opacity:.75}
+.pd-item:hover svg{opacity:1}
+.pd-divider{height:1px;background:var(--line);margin:4px 0}
+
 /* hamburger */
 .nav-toggle{
   display:none;flex-direction:column;gap:5px;
@@ -414,17 +489,62 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 <!-- ════════ NAVBAR ════════ -->
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="home" class="nav-brand">
+    <a href="Home" class="nav-brand">
       <div class="nav-logo">CN</div>
       <span class="nav-brand-txt">CodeNova <span>SOU</span></span>
     </a>
     <div class="nav-links" id="navLinks">
-      <a href="home" class="nav-link active">Home</a>
+      <a href="Home" class="nav-link active">Home</a>
       <a href="#events-section" class="nav-link" id="navEventsLink">Events</a>
     </div>
     <div class="nav-actions">
-      <a href="login" class="nav-btn-outline">Login</a>
-      <a href="signup" class="nav-btn">Register</a>
+      <%
+        Object loggedUser = session.getAttribute("loggedUser");
+        if (loggedUser != null) {
+          com.Entity.UserEntity u = (com.Entity.UserEntity) loggedUser;
+          String pic   = u.getProfilePic();
+          String fname = u.getFirstName() != null ? u.getFirstName() : "";
+          String lname = u.getLastName()  != null ? u.getLastName()  : "";
+          String email = u.getEmail()     != null ? u.getEmail()     : "";
+          String initials = (fname.length()>0 ? String.valueOf(fname.charAt(0)) : "")
+                          + (lname.length()>0 ? String.valueOf(lname.charAt(0)) : "");
+      %>
+        <div class="profile-wrap" id="profileWrap">
+          <% if (pic != null && !pic.isEmpty()) { %>
+            <img src="<%= pic %>" class="profile-avatar" id="profileTrigger" alt="Profile"/>
+          <% } else { %>
+            <div class="profile-avatar-ph" id="profileTrigger"><%= initials.toUpperCase() %></div>
+          <% } %>
+
+          <div class="profile-dropdown" id="profileDropdown">
+            <!-- User info -->
+            <div class="pd-user">
+              <% if (pic != null && !pic.isEmpty()) { %>
+                <img src="<%= pic %>" class="pd-user-avatar" alt=""/>
+              <% } else { %>
+                <div class="pd-user-avatar-ph"><%= initials.toUpperCase() %></div>
+              <% } %>
+              <div>
+                <div class="pd-name"><%= fname + " " + lname %></div>
+                <div class="pd-email"><%= email %></div>
+              </div>
+            </div>
+            <!-- Options -->
+            <a href="/userProfile" class="pd-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              My Profile
+            </a>
+            <div class="pd-divider"></div>
+            <a href="logout" class="pd-item logout">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </a>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="login" class="nav-btn-outline">Login</a>
+        <a href="signup" class="nav-btn">Register</a>
+      <% } %>
     </div>
     <button class="nav-toggle" id="navToggle" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -652,7 +772,21 @@ document.getElementById('navToggle').addEventListener('click', function(){
   document.getElementById('navLinks').classList.toggle('open');
 });
 
-// Smooth scroll to events section for navbar "Events" and hero "Browse Events"
+// Profile dropdown toggle
+var trigger  = document.getElementById('profileTrigger');
+var dropdown = document.getElementById('profileDropdown');
+if (trigger && dropdown) {
+  trigger.addEventListener('click', function(e){
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+  document.addEventListener('click', function(){
+    dropdown.classList.remove('open');
+  });
+  dropdown.addEventListener('click', function(e){ e.stopPropagation(); });
+}
+
+// Smooth scroll to events section
 function scrollToEvents(e) {
   e.preventDefault();
   var target = document.getElementById('events-section');

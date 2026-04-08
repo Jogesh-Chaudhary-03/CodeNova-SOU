@@ -696,8 +696,7 @@ body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:v
           <span class="rc-v" style="color:#fde68a">${event.lastDate}</span>
         </div>
       </c:if>
-      <a href="#" class="rc-btn">Register Now →</a>
-    </div>
+		<a href="/registerEvent/${event.eventId}" class="rc-btn">Register Now →</a>    </div>
 
     <div class="s-card">
       <div class="s-body">
