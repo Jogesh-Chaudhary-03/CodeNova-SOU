@@ -24,6 +24,8 @@ public class AddEventEntity {
 	    private LocalDate postedDate;
 	    private LocalDate lastDate;         // registration last date
 	    private String eventImage;
+	    private Integer minTeamSize;
+	    private Integer maxTeamSize;
 		public Integer getEventId() {
 			return eventId;
 		}
@@ -78,5 +80,18 @@ public class AddEventEntity {
 		public void setEventImage(String eventImage) {
 			this.eventImage = eventImage;
 		}
+		public Integer getMinTeamSize() {
+			return minTeamSize;
+		}
+		public void setMinTeamSize(Integer minTeamSize) {
+			this.minTeamSize = minTeamSize;
+		}
+		public Integer getMaxTeamSize() {
+			return maxTeamSize;
+		}
+		public void setMaxTeamSize(Integer maxTeamSize) {
+			this.maxTeamSize = maxTeamSize;
+		}
+		
 	    
 }
