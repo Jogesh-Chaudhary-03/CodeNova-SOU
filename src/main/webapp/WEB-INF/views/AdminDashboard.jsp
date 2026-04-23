@@ -126,12 +126,26 @@ tr:hover td{background:#fafbff}
 .ab{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:7px;text-decoration:none;transition:opacity .15s,transform .15s;border:none;cursor:pointer}
 .ab:hover{opacity:.85;transform:translateY(-1px)}
 .ab-view{background:var(--bg2);color:var(--pri)}
+.ab-edit{background:var(--amber-bg);color:var(--amber)}
 .ab-del{background:var(--red-bg);color:var(--red)}
 .ab-block{background:var(--red-bg);color:var(--red)}
 .ab-unblock{background:var(--green-bg);color:var(--green)}
 .ab-wrap{display:flex;gap:6px;flex-wrap:wrap}
 
 .empty-r td{text-align:center;padding:36px;color:var(--muted);font-size:13.5px}
+
+/* ── CHARTS ── */
+.charts-row{display:grid;grid-template-columns:280px 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:900px){.charts-row{grid-template-columns:1fr}}
+.chart-card{background:var(--white);border:1.5px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:0 2px 8px rgba(79,70,229,.04)}
+.chart-hdr{display:flex;align-items:center;gap:9px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.chart-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--pri),var(--acc));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.chart-title{font-size:13.5px;font-weight:800;color:var(--ink)}
+.chart-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.chart-wrap{display:flex;justify-content:center;align-items:center;padding:10px 0}
+.chart-legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.cl-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--sub)}
+.cl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%);transition:transform .25s}
@@ -238,6 +252,64 @@ tr:hover td{background:#fafbff}
         <div class="sc"><div class="sc-icon r">🚫</div><div><div class="sc-num">${blockedUsers}</div><div class="sc-lbl">Blocked Users</div></div></div>
       </div>
 
+      <!-- ── CHARTS ── -->
+      <div class="charts-row">
+        <!-- Chart 1: User Status Doughnut -->
+        <div class="chart-card">
+          <div class="chart-hdr">
+            <div class="chart-icon">👥</div>
+            <div>
+              <div class="chart-title">User Status</div>
+              <div class="chart-sub">Active vs Blocked users</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="userChart" width="260" height="260"></canvas>
+          </div>
+          <div class="chart-legend">
+            <div class="cl-item"><span class="cl-dot" style="background:#059669"></span>Active (${activeUsers})</div>
+            <div class="cl-item"><span class="cl-dot" style="background:#dc2626"></span>Blocked (${blockedUsers})</div>
+          </div>
+        </div>
+
+        <!-- Chart 2: Event Type Bar -->
+        <div class="chart-card">
+          <div class="chart-hdr">
+            <div class="chart-icon">📅</div>
+            <div>
+              <div class="chart-title">Event Types</div>
+              <div class="chart-sub">Individual vs Team events</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="eventChart" width="380" height="260"></canvas>
+          </div>
+          <div class="chart-legend">
+            <div class="cl-item"><span class="cl-dot" style="background:#4f46e5"></span>Individual</div>
+            <div class="cl-item"><span class="cl-dot" style="background:#0d9488"></span>Team</div>
+          </div>
+        </div>
+      </div>
+
+      <%-- Pass data for charts --%>
+      <script>
+        var totalEventsData  = ${totalEvents};
+        var activeUsersData  = ${activeUsers};
+        var blockedUsersData = ${blockedUsers};
+        var indivEvents = 0;
+        var teamEvents  = 0;
+        var onlineEv    = 0;
+        var offlineEv   = 0;
+      </script>
+      <c:forEach var="ev" items="${eventList}">
+        <script>
+          if ('${ev.participationType}' === 'Individual') indivEvents++;
+          else if ('${ev.participationType}' === 'Team')  teamEvents++;
+          if ('${ev.location}' === 'Online') onlineEv++;
+          else offlineEv++;
+        </script>
+      </c:forEach>
+
       <!-- Recent Events -->
       <div class="tc">
         <div class="tc-hd">
@@ -264,6 +336,7 @@ tr:hover td{background:#fafbff}
                   <td style="font-size:12px;color:var(--muted)">${ev.lastDate}</td>
                   <td><div class="ab-wrap">
                     <a href="/listEventDetails/${ev.eventId}" class="ab ab-view">View</a>
+                    <a href="/admin/editEvent/${ev.eventId}" class="ab ab-edit">Edit</a>
                     <a href="/admin/deleteEvent/${ev.eventId}" class="ab ab-del" onclick="return confirm('Delete this event?')">Delete</a>
                   </div></td>
                 </tr>
@@ -354,6 +427,7 @@ tr:hover td{background:#fafbff}
                   <td style="font-size:12px;color:var(--muted)">${ev.lastDate}</td>
                   <td><div class="ab-wrap">
                     <a href="/listEventDetails/${ev.eventId}" class="ab ab-view">View</a>
+                    <a href="/admin/editEvent/${ev.eventId}" class="ab ab-edit">Edit</a>
                     <a href="/admin/deleteEvent/${ev.eventId}" class="ab ab-del" onclick="return confirm('Delete this event?')">Delete</a>
                   </div></td>
                 </tr>
@@ -450,6 +524,100 @@ document.getElementById('tbDate').textContent =
 // Mobile
 if (window.innerWidth <= 768)
   document.getElementById('mobMenu').style.display = 'block';
+</script>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── Chart 1: User Status Doughnut ──
+(function(){
+  var ctx = document.getElementById('userChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Active', 'Blocked'],
+      datasets: [{
+        data: [activeUsersData, blockedUsersData],
+        backgroundColor: ['#059669', '#dc2626'],
+        borderColor: ['#d1fae5', '#fee2e2'],
+        borderWidth: 3,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: false,
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ' ' + ctx.label + ': ' + ctx.raw;
+            }
+          }
+        }
+      }
+    }
+  });
+})();
+
+// ── Chart 2: Event Type Bar ──
+(function(){
+  var ctx = document.getElementById('eventChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Individual', 'Team', 'Online', 'Offline'],
+      datasets: [{
+        label: 'Events',
+        data: [indivEvents, teamEvents, onlineEv, offlineEv],
+        backgroundColor: [
+          'rgba(79,70,229,.8)',
+          'rgba(13,148,136,.8)',
+          'rgba(245,158,11,.8)',
+          'rgba(107,114,128,.8)'
+        ],
+        borderColor: [
+          '#4f46e5','#0d9488','#f59e0b','#6b7280'
+        ],
+        borderWidth: 1.5,
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) { return ' Count: ' + ctx.raw; }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+            font: { family: 'Plus Jakarta Sans', size: 11 },
+            color: '#9ca3af'
+          },
+          grid: { color: '#f3f4f6' }
+        },
+        x: {
+          ticks: {
+            font: { family: 'Plus Jakarta Sans', size: 11 },
+            color: '#6b7280'
+          },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+})();
 </script>
 </body>
 </html>

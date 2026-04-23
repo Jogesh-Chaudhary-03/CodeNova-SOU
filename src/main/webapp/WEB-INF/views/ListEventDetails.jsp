@@ -600,24 +600,26 @@ body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:v
       <div class="card">
         <div class="card-head"><div class="c-icon">💰</div> Prize Pool</div>
         <div class="card-body">
+          <%-- prizePool = "₹50000,₹25000,₹10000" comma separated --%>
+          <c:set var="prizes" value="${fn:split(eventDetail.prizePool, ',')}"/>
           <div class="prize-grid">
             <div class="p-card gold">
               <div class="p-medal">🥇</div>
               <div class="p-pos">1st Place</div>
-              <div class="p-amt">${eventDetail.prizePool}</div>
+              <div class="p-amt">${not empty prizes[0] ? fn:trim(prizes[0]) : '—'}</div>
               <div class="p-note">Cash Prize</div>
             </div>
             <div class="p-card silver">
               <div class="p-medal">🥈</div>
               <div class="p-pos">2nd Place</div>
-              <div class="p-amt">—</div>
-              <div class="p-note">Stay tuned</div>
+              <div class="p-amt">${not empty prizes[1] ? fn:trim(prizes[1]) : '—'}</div>
+              <div class="p-note">${not empty prizes[1] ? 'Cash Prize' : 'Stay tuned'}</div>
             </div>
             <div class="p-card bronze">
               <div class="p-medal">🥉</div>
               <div class="p-pos">3rd Place</div>
-              <div class="p-amt">—</div>
-              <div class="p-note">Stay tuned</div>
+              <div class="p-amt">${not empty prizes[2] ? fn:trim(prizes[2]) : '—'}</div>
+              <div class="p-note">${not empty prizes[2] ? 'Cash Prize' : 'Stay tuned'}</div>
             </div>
           </div>
           <p class="cert-note">🎓 Every participant receives a certificate of participation</p>
@@ -696,7 +698,9 @@ body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:v
           <span class="rc-v" style="color:#fde68a">${event.lastDate}</span>
         </div>
       </c:if>
-		<a href="/registerEvent/${event.eventId}" class="rc-btn">Register Now →</a>    </div>
+      <a href="/registerEvent/${event.eventId}" class="rc-btn">Register Now →</a>
+      <a href="/submitWork/${event.eventId}" class="rc-btn" style="margin-top:8px;background:#fff;color:var(--green);box-shadow:0 2px 8px rgba(5,150,105,.15)">📤 Submit Work</a>
+    </div>
 
     <div class="s-card">
       <div class="s-body">

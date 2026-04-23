@@ -23,89 +23,202 @@ import com.Repository.EventFAQRepository;
 import com.Repository.EventRoundsRepository;
 import com.cloudinary.Cloudinary;
 
+import jakarta.servlet.http.HttpSession;
+import com.Entity.UserEntity;
+
 @Controller
 public class AddEventController {
-	
-	
-	@Autowired
-	AddEventRepository addEventRepository;
-	
-	@Autowired
-	Cloudinary cloudinary;
-	
-	@Autowired
-	EventDetailsRepository eventDetailsRepository;
-	
-	@Autowired
-	EventRoundsRepository eventRoundsRepository;
-	
-	@Autowired
-	EventFAQRepository eventFAQRepository;
-	
-	@GetMapping("addEvent")
-	public String AddEvent(){
-		return "AddEvent";
-	}
-	
-	@GetMapping("eventDetails")
-	public String EventDetails() {
-		return "EventDetails";
-	}
-	
-	@PostMapping("/saveEvent")
-	public String SaveEvent(AddEventEntity addEventEntity,
-	                        @RequestParam("eventFile") MultipartFile eventFile,EventDetailsEntity eventDetailsEntity,EventRoundsEntity eventRoundsEntity,EventFAQEntity eventFAQEntity) {
 
-	    try {
+    @Autowired AddEventRepository    addEventRepository;
+    @Autowired Cloudinary            cloudinary;
+    @Autowired EventDetailsRepository eventDetailsRepository;
+    @Autowired EventRoundsRepository  eventRoundsRepository;
+    @Autowired EventFAQRepository     eventFAQRepository;
 
-	        Map map = cloudinary.uploader().upload(eventFile.getBytes(), null);
+    @GetMapping("addEvent")
+    public String AddEvent(HttpSession session) {
+        UserEntity user = (UserEntity) session.getAttribute("loggedUser");
+        if (user == null || !"Admin".equals(user.getRole()))
+            return "redirect:/login";
+        return "AddEvent";
+    }
 
-	        String eventImage = map.get("secure_url").toString();
+    @GetMapping("eventDetails")
+    public String EventDetails() { return "EventDetails"; }
 
-	        addEventEntity.setEventImage(eventImage);
+    // ══════════════════════════════════════════════════════
+    //  SAVE EVENT — supports multiple rounds + FAQs
+    // ══════════════════════════════════════════════════════
+    @PostMapping("/saveEvent")
+    public String SaveEvent(
+            AddEventEntity addEventEntity,
+            @RequestParam("eventFile") MultipartFile eventFile,
+            EventDetailsEntity eventDetailsEntity,
 
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    }
+            // Multiple rounds
+            @RequestParam(value = "roundName",        required = false) List<String> roundNames,
+            @RequestParam(value = "roundDescription", required = false) List<String> roundDescriptions,
 
-	    addEventRepository.save(addEventEntity);
-	    
-	    eventDetailsEntity.setEventId(addEventEntity.getEventId());
-		eventDetailsRepository.save(eventDetailsEntity);
-		eventRoundsEntity.setEventId(addEventEntity.getEventId());
-		eventRoundsRepository.save(eventRoundsEntity);
-		eventFAQEntity.setEventId(addEventEntity.getEventId());
-		eventFAQRepository.save(eventFAQEntity);
+            // Multiple FAQs
+            @RequestParam(value = "question", required = false) List<String> questions,
+            @RequestParam(value = "answer",   required = false) List<String> answers) {
 
-	    return "Home";
-	}
-	
-	
-	@GetMapping("listEvent")
-	public String ListEvent(Model model) {
-		List<AddEventEntity> eventList= addEventRepository.findAll();
-		model.addAttribute("eventList", eventList);
-		
-		return "ListEvent";
-	}
-	
-//	@GetMapping("/listEventDetails")
-	//public String listEventDetails(Model model) {
+        // Upload image
+        try {
+            Map map = cloudinary.uploader().upload(eventFile.getBytes(), null);
+            addEventEntity.setEventImage(map.get("secure_url").toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-	    // Fetch complete EventDetails entities (with text fields)
-	    //List<EventDetailsEntity> event = eventDetailsRepository.findAll();
+        // Save event
+        addEventRepository.save(addEventEntity);
+        Integer eventId = addEventEntity.getEventId();
 
-	    //model.addAttribute("event", event); // List of entities
-	  //  return "ListEventDetails"; // JSP name
-	//}
-	
-	@GetMapping("/listEventDetails/{id}")
-	public String listEventDetails(@PathVariable Integer id, Model model) {
-	    model.addAttribute("event", addEventRepository.findById(id).orElse(null));
-	    model.addAttribute("eventDetail", eventDetailsRepository.findByEventId(id));
-	    model.addAttribute("rounds", eventRoundsRepository.findByEventId(id));
-	    model.addAttribute("faqs", eventFAQRepository.findByEventId(id));
-	    return "ListEventDetails";
-	}
-	
+        // Save event details
+        eventDetailsEntity.setEventId(eventId);
+        eventDetailsRepository.save(eventDetailsEntity);
+
+        // Save ALL rounds
+        if (roundNames != null) {
+            for (int i = 0; i < roundNames.size(); i++) {
+                String rName = roundNames.get(i);
+                String rDesc = (roundDescriptions != null && i < roundDescriptions.size())
+                               ? roundDescriptions.get(i) : "";
+                if (rName != null && !rName.trim().isEmpty()) {
+                    EventRoundsEntity round = new EventRoundsEntity();
+                    round.setEventId(eventId);
+                    round.setRoundName(rName.trim());
+                    round.setRoundDescription(rDesc.trim());
+                    eventRoundsRepository.save(round);
+                }
+            }
+        }
+
+        // Save ALL FAQs
+        if (questions != null) {
+            for (int i = 0; i < questions.size(); i++) {
+                String q = questions.get(i);
+                String a = (answers != null && i < answers.size()) ? answers.get(i) : "";
+                if (q != null && !q.trim().isEmpty()) {
+                    EventFAQEntity faq = new EventFAQEntity();
+                    faq.setEventId(eventId);
+                    faq.setQuestion(q.trim());
+                    faq.setAnswer(a.trim());
+                    eventFAQRepository.save(faq);
+                }
+            }
+        }
+
+        return "redirect:/admin-dashboard";
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  LIST EVENTS
+    // ══════════════════════════════════════════════════════
+    @GetMapping("listEvent")
+    public String ListEvent(Model model) {
+        model.addAttribute("eventList", addEventRepository.findAll());
+        return "ListEvent";
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  EVENT DETAILS
+    // ══════════════════════════════════════════════════════
+    @GetMapping("/listEventDetails/{id}")
+    public String listEventDetails(@PathVariable Integer id, Model model) {
+        model.addAttribute("event",       addEventRepository.findById(id).orElse(null));
+        model.addAttribute("eventDetail", eventDetailsRepository.findByEventId(id));
+        model.addAttribute("rounds",      eventRoundsRepository.findByEventId(id));
+        model.addAttribute("faqs",        eventFAQRepository.findByEventId(id));
+        return "ListEventDetails";
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  EDIT EVENT PAGE
+    // ══════════════════════════════════════════════════════
+    @GetMapping("/admin/editEvent/{id}")
+    public String editEvent(@PathVariable Integer id,
+                            HttpSession session, Model model) {
+        UserEntity admin = (UserEntity) session.getAttribute("loggedUser");
+        if (admin == null || !"Admin".equals(admin.getRole()))
+            return "redirect:/login";
+
+        AddEventEntity     event       = addEventRepository.findById(id).orElse(null);
+        EventDetailsEntity eventDetail = eventDetailsRepository.findByEventId(id);
+        List<EventRoundsEntity> rounds = eventRoundsRepository.findByEventId(id);
+        List<EventFAQEntity>    faqs   = eventFAQRepository.findByEventId(id);
+
+        model.addAttribute("event",       event);
+        model.addAttribute("eventDetail", eventDetail);
+        model.addAttribute("rounds",      rounds);
+        model.addAttribute("faqs",        faqs);
+        return "EditEvent";
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  UPDATE EVENT
+    // ══════════════════════════════════════════════════════
+    @PostMapping("/admin/updateEvent")
+    public String updateEvent(
+            @RequestParam Integer eventId,
+            @RequestParam String eventTitle,
+            @RequestParam String organizationName,
+            @RequestParam String participationType,
+            @RequestParam String location,
+            @RequestParam(required = false) String skillTags,
+            @RequestParam String postedDate,
+            @RequestParam String lastDate,
+            @RequestParam(value = "eventFile", required = false) MultipartFile eventFile,
+
+            // Details
+            @RequestParam(required = false) String aboutEvent,
+            @RequestParam(required = false) String eligibility,
+            @RequestParam(required = false) String rules,
+            @RequestParam(required = false) String eventFormat,
+            @RequestParam(required = false) String eventPerks,
+            @RequestParam(required = false) String prizePool,
+            @RequestParam(required = false) String contactEmail,
+            @RequestParam(required = false) String contactPhone,
+
+            HttpSession session) {
+
+        UserEntity admin = (UserEntity) session.getAttribute("loggedUser");
+        if (admin == null || !"Admin".equals(admin.getRole()))
+            return "redirect:/login";
+
+        AddEventEntity event = addEventRepository.findById(eventId).orElse(null);
+        if (event == null) return "redirect:/admin-dashboard";
+
+        event.setEventTitle(eventTitle);
+        event.setOrganizationName(organizationName);
+        event.setParticipationType(participationType);
+        event.setLocation(location);
+        event.setSkillTags(skillTags);
+        event.setPostedDate(java.time.LocalDate.parse(postedDate));
+        event.setLastDate(java.time.LocalDate.parse(lastDate));
+
+        if (eventFile != null && !eventFile.isEmpty()) {
+            try {
+                Map map = cloudinary.uploader().upload(eventFile.getBytes(), null);
+                event.setEventImage(map.get("secure_url").toString());
+            } catch (IOException e) { e.printStackTrace(); }
+        }
+        addEventRepository.save(event);
+
+        EventDetailsEntity detail = eventDetailsRepository.findByEventId(eventId);
+        if (detail == null) detail = new EventDetailsEntity();
+        detail.setEventId(eventId);
+        detail.setAboutEvent(aboutEvent);
+        detail.setEligibility(eligibility);
+        detail.setRules(rules);
+        detail.setEventFormat(eventFormat);
+        detail.setEventPerks(eventPerks);
+        detail.setPrizePool(prizePool);
+        detail.setContactEmail(contactEmail);
+        detail.setContactPhone(contactPhone);
+        eventDetailsRepository.save(detail);
+
+        return "redirect:/listEventDetails/" + eventId;
+    }
 }

@@ -266,6 +266,13 @@ input[readonly]{background:var(--bg);color:var(--sub)}
             <div class="div">
               Team Members
               <span class="mc-lbl" id="mcLbl"></span>
+              <c:if test="${not empty event.minTeamSize or not empty event.maxTeamSize}">
+                <span style="font-size:11px;font-weight:600;color:var(--pri);background:var(--bg2);padding:2px 9px;border-radius:20px;border:1px solid #c7d2fe">
+                  <c:if test="${not empty event.minTeamSize}">Min: ${event.minTeamSize}</c:if>
+                  <c:if test="${not empty event.minTeamSize and not empty event.maxTeamSize}"> · </c:if>
+                  <c:if test="${not empty event.maxTeamSize}">Max: ${event.maxTeamSize}</c:if>
+                </span>
+              </c:if>
             </div>
             <div class="mlist" id="membersList"></div>
             <button type="button" class="add-mem-btn" onclick="addMember()">
@@ -362,6 +369,13 @@ function setType(type) {
 
 // Add team member row
 function addMember() {
+  var maxSize = parseInt('${event.maxTeamSize}') || 0;
+  var current = document.getElementById('membersList').children.length;
+  // leader counts as 1, so members can be maxSize-1
+  if (maxSize > 0 && current >= (maxSize - 1)) {
+    alert('Maximum team size is ' + maxSize + '. Cannot add more members (you as leader are counted as 1).');
+    return;
+  }
   mc++;
   var rowId = 'mr' + mc;
   var div   = document.createElement('div');
@@ -400,6 +414,21 @@ document.getElementById('regForm').addEventListener('submit', function(e) {
       e.preventDefault();
       tn.style.borderColor = 'var(--red)';
       tn.focus();
+      return;
+    }
+    // Max team size check
+    var maxSize = parseInt('${event.maxTeamSize}') || 0;
+    var minSize = parseInt('${event.minTeamSize}') || 0;
+    var memberCount = document.getElementById('membersList').children.length;
+    if (maxSize > 0 && memberCount >= maxSize) {
+      e.preventDefault();
+      alert('Maximum team size is ' + maxSize + '. You cannot add more than ' + (maxSize - 1) + ' additional members (leader is counted as 1).');
+      return;
+    }
+    if (minSize > 0 && (memberCount + 1) < minSize) {
+      e.preventDefault();
+      alert('Minimum team size is ' + minSize + '. Please add at least ' + (minSize - 1) + ' more member(s).');
+      return;
     }
   }
 });
