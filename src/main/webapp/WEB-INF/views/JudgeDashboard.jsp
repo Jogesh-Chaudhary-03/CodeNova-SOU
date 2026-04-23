@@ -258,11 +258,20 @@ td{padding:12px 14px;font-size:13px;color:var(--ink2);vertical-align:middle}
                   </td>
                   <td><a href="${sub.fileUrl}" target="_blank" class="file-chip">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    ${fn:length(sub.fileName) > 20 ? fn:substring(sub.fileName,0,20).concat('...') : sub.fileName}
+                    ${fn:length(sub.fileName) > 22 ? fn:substring(sub.fileName,0,22) : sub.fileName}
                   </a></td>
                   <td><span class="ft-badge ft-${fn:toLowerCase(sub.fileType)}">${sub.fileType}</span></td>
-                  <td style="font-size:12px;color:var(--muted)">${sub.submittedAt}</td>
-                  <td><button class="ab ab-review" onclick="openReview(${sub.submissionId},'${sub.submittedBy}',${not empty sub.score ? sub.score : 0},'${sub.status}')">Review</button></td>
+                  <td style="font-size:12px;color:var(--muted)">${sub.submittedAt}</td>	
+					<td>	
+					    <button class="ab ab-review"
+          				data-id="${sub.submissionId}"
+          				data-name="${sub.submittedBy}"
+          				data-score="${not empty sub.score ? sub.score : 0}"
+          				data-status="${sub.status}"
+          				onclick="openReview(this)">
+    						Review
+  						</button>
+					</td>
                 </tr>
               </c:if>
             </c:forEach>
@@ -321,12 +330,17 @@ td{padding:12px 14px;font-size:13px;color:var(--ink2);vertical-align:middle}
                       <c:otherwise><span class="badge bd-pending">⏳ Pending</span></c:otherwise>
                     </c:choose>
                   </td>
-                  <td style="font-weight:800;color:var(--green)">${not empty sub.score ? sub.score.concat('/100') : '—'}</td>
+                  <td style="font-weight:800;color:var(--green)">${not empty sub.score ? sub.score : 0}/100</td>
                   <td>
-                    <button class="ab ab-review" onclick="openReview(${sub.submissionId},'${sub.submittedBy}',${not empty sub.score ? sub.score : 0},'${sub.status}')">
-                      Review
-                    </button>
-                  </td>
+  <button class="ab ab-review"
+          data-id="${sub.submissionId}"
+          data-name="${sub.submittedBy}"
+          data-score="${not empty sub.score ? sub.score : 0}"
+          data-status="${sub.status}"
+          onclick="openReview(this)">
+    Review
+  </button>
+</td>
                 </tr>
                 </c:forEach>
               </c:when>
@@ -385,9 +399,17 @@ td{padding:12px 14px;font-size:13px;color:var(--ink2);vertical-align:middle}
                         <c:otherwise><span class="badge bd-pending">⏳ Pending</span></c:otherwise>
                       </c:choose>
                     </td>
-                    <td style="font-weight:800;color:var(--green)">${not empty sub.score ? sub.score.concat('/100') : '—'}</td>
-                    <td><button class="ab ab-review" onclick="openReview(${sub.submissionId},'${sub.submittedBy}',${not empty sub.score ? sub.score : 0},'${sub.status}')">Review</button></td>
-                  </tr>
+                    <td style="font-weight:800;color:var(--green)">${not empty sub.score ? sub.score : 0}/100</td>
+<td>
+  <button class="ab ab-review"
+          data-id="${sub.submissionId}"
+          data-name="${sub.submittedBy}"
+          data-score="${not empty sub.score ? sub.score : 0}"
+          data-status="${sub.status}"
+          onclick="openReview(this)">
+    Review
+  </button>
+</td>                  </tr>
                   </c:forEach>
                 </tbody>
               </table>
@@ -464,13 +486,18 @@ function filterTbl(input, tableId) {
   });
 }
 
-function openReview(id, name, score, status) {
+function openReview(btn) {
+  var id     = btn.getAttribute('data-id');
+  var name   = btn.getAttribute('data-name');
+  var score  = parseInt(btn.getAttribute('data-score')) || 50;
+  var status = btn.getAttribute('data-status') || 'REVIEWED';
   document.getElementById('modalSubId').value   = id;
   document.getElementById('modalSubtitle').textContent = 'Reviewing: ' + name;
-  document.getElementById('scoreRange').value   = score || 50;
-  document.getElementById('scoreHidden').value  = score || 50;
-  document.getElementById('scoreDisplay').textContent = score || 50;
-  document.getElementById('modalStatus').value  = status || 'REVIEWED';
+  document.getElementById('scoreRange').value   = score;
+  document.getElementById('scoreHidden').value  = score;
+  document.getElementById('scoreDisplay').textContent = score;
+  document.getElementById('modalStatus').value  = status;
+  document.getElementById('modalFeedback').value = '';
   document.getElementById('reviewModal').classList.add('open');
 }
 function closeReview() {
