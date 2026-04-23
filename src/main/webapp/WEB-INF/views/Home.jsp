@@ -581,25 +581,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     </div>
 
     <!-- RIGHT: Stats card -->
-    <div class="hero-stats">
-      <div class="stat-item">
-        <div class="stat-num">50+</div>
-        <div class="stat-lbl">Events Hosted</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">2K+</div>
-        <div class="stat-lbl">Participants</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">₹5L+</div>
-        <div class="stat-lbl">Prize Pool</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">30+</div>
-        <div class="stat-lbl">Organisations</div>
-      </div>
-    </div>
-
+    
   </div>
 </section>
 
