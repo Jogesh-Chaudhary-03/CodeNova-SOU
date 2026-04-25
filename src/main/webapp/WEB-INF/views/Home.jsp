@@ -121,21 +121,34 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 }
 .btn-hero-sec:hover{background:rgba(255,255,255,.22);transform:translateY(-2px)}
 
-/* hero stats card */
-.hero-stats{
-  background:rgba(255,255,255,.12);backdrop-filter:blur(16px);
-  border:1.5px solid rgba(255,255,255,.22);
-  border-radius:20px;padding:28px;
-  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+/* hero image collage */
+.hero-img-collage{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  position:relative;
 }
-@media(max-width:900px){.hero-stats{max-width:400px;margin:0 auto}}
-.stat-item{
-  background:rgba(255,255,255,.1);border-radius:12px;
-  padding:16px;text-align:center;
-  border:1px solid rgba(255,255,255,.15);
+@media(max-width:900px){.hero-img-collage{max-width:440px;margin:0 auto}}
+.collage-main{position:relative;grid-row:1;border-radius:18px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.collage-img-main{width:100%;height:220px;object-fit:cover;display:block;transition:transform .4s}
+.collage-main:hover .collage-img-main{transform:scale(1.04)}
+.collage-badge{
+  position:absolute;bottom:12px;left:12px;
+  background:rgba(255,255,255,.2);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.3);
+  color:#fff;font-size:12px;font-weight:700;
+  padding:5px 12px;border-radius:20px;
+  display:flex;align-items:center;gap:5px;
 }
-.stat-num{font-size:26px;font-weight:800;color:#fff;line-height:1}
-.stat-lbl{font-size:11.5px;color:rgba(255,255,255,.65);margin-top:4px;font-weight:600;letter-spacing:.04em}
+.collage-badge span{font-size:14px}
+.collage-side{display:flex;flex-direction:column;gap:12px}
+.collage-side-img{position:relative;border-radius:14px;overflow:hidden;flex:1;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.collage-img-sm{width:100%;height:100%;min-height:100px;object-fit:cover;display:block;transition:transform .4s}
+.collage-side-img:hover .collage-img-sm{transform:scale(1.06)}
+.collage-side-label{
+  position:absolute;bottom:8px;left:8px;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(6px);
+  color:rgba(255,255,255,.9);font-size:11px;font-weight:700;
+  padding:3px 9px;border-radius:10px;
+}
 
 /* ══════════════════════════════════
    FEATURES STRIP
@@ -152,24 +165,38 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 @media(max-width:720px){.features-inner{grid-template-columns:1fr}}
 .feat-card{
   display:flex;align-items:flex-start;gap:14px;
-  padding:20px;border-radius:14px;
+  padding:20px 20px 28px;border-radius:14px;
   border:1.5px solid var(--line);
   background:var(--bg);
-  transition:border-color .2s,box-shadow .2s,transform .2s;
+  text-decoration:none;color:inherit;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,box-shadow .2s,transform .2s,background .2s;
+}
+.feat-card::after{
+  content:'Explore →';
+  position:absolute;bottom:12px;right:14px;
+  font-size:11.5px;font-weight:700;color:var(--pri);
+  opacity:0;transform:translateX(-6px);
+  transition:opacity .2s,transform .2s;
 }
 .feat-card:hover{
   border-color:#c7d2fe;
-  box-shadow:0 6px 20px rgba(79,70,229,.1);
-  transform:translateY(-3px);
+  box-shadow:0 10px 28px rgba(79,70,229,.14);
+  transform:translateY(-5px);
+  background:var(--white);
 }
+.feat-card:hover::after{opacity:1;transform:translateX(0)}
 .feat-icon{
   width:46px;height:46px;border-radius:12px;flex-shrink:0;
   background:linear-gradient(135deg,var(--pri),var(--acc));
   display:flex;align-items:center;justify-content:center;
   font-size:22px;
   box-shadow:0 4px 12px rgba(79,70,229,.25);
+  transition:transform .2s,box-shadow .2s;
 }
-.feat-title{font-size:14.5px;font-weight:800;color:var(--ink);margin-bottom:4px}
+.feat-card:hover .feat-icon{transform:scale(1.1);box-shadow:0 6px 18px rgba(79,70,229,.35)}
+.feat-title{font-size:14.5px;font-weight:800;color:var(--ink);margin-bottom:4px;transition:color .18s}
+.feat-card:hover .feat-title{color:var(--pri)}
 .feat-desc{font-size:13px;color:var(--sub);line-height:1.6}
 
 /* ══════════════════════════════════
@@ -496,6 +523,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="nav-links" id="navLinks">
       <a href="Home" class="nav-link active">Home</a>
       <a href="#events-section" class="nav-link" id="navEventsLink">Events</a>
+      <a href="challenges" class="nav-link">Challenges</a>
+      <a href="teams" class="nav-link">Teams</a>
+      <a href="leaderboard" class="nav-link">Leaderboard</a>
     </div>
     <div class="nav-actions">
       <%
@@ -580,35 +610,52 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
       </div>
     </div>
 
-    <!-- RIGHT: Stats card -->
-    
+    <!-- RIGHT: Hackathon images collage -->
+    <div class="hero-img-collage">
+      <div class="collage-main">
+        <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="Students coding hackathon" class="collage-img-main"/>
+        <div class="collage-badge">
+          <span>🏆</span> Live Now
+        </div>
+      </div>
+      <div class="collage-side">
+        <div class="collage-side-img">
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&q=80" alt="Team collaboration" class="collage-img-sm"/>
+          <div class="collage-side-label">Team Work</div>
+        </div>
+        <div class="collage-side-img">
+          <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80" alt="Coding competition" class="collage-img-sm"/>
+          <div class="collage-side-label">Compete</div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- ════════ FEATURES ════════ -->
 <div class="features">
   <div class="features-inner">
-    <div class="feat-card">
+    <a href="teams" class="feat-card">
       <div class="feat-icon">👥</div>
       <div>
         <div class="feat-title">Team Formation</div>
         <div class="feat-desc">Create or join teams and collaborate with the best minds on campus.</div>
       </div>
-    </div>
-    <div class="feat-card">
+    </a>
+    <a href="leaderboard" class="feat-card">
       <div class="feat-icon">📊</div>
       <div>
         <div class="feat-title">Live Leaderboard</div>
         <div class="feat-desc">Track rankings and competition progress in real-time.</div>
       </div>
-    </div>
-    <div class="feat-card">
+    </a>
+    <a href="challenges" class="feat-card">
       <div class="feat-icon">💡</div>
       <div>
         <div class="feat-title">Exciting Challenges</div>
         <div class="feat-desc">Solve real-world problems and showcase your innovation to the world.</div>
       </div>
-    </div>
+    </a>
   </div>
 </div>
 
