@@ -45,20 +45,44 @@ public class SessionController {
         return "ForgetPassword";
     }
 
-    // ── Register ───────────────────────────────────────────
+    // ── Register (with server-side validation) ─────────────
 
     @PostMapping("/usersignup")
     public String register(
             UserEntity userEntity,
-            @RequestParam(value = "picFile", required = false)
-            MultipartFile picFile) {
+            @RequestParam(value = "picFile", required = false) MultipartFile picFile,
+            Model model) {
 
+        // ✅ FIX: Server-side validation — check if email already registered
+        if (userEntity.getEmail() == null || userEntity.getEmail().trim().isEmpty()) {
+            model.addAttribute("signupError", "Email address is required.");
+            return "Signup";
+        }
+
+        Optional<UserEntity> existing = userRepository.findByEmail(userEntity.getEmail().trim());
+        if (existing.isPresent()) {
+            model.addAttribute("signupError",
+                "This email is already registered. Please login or use a different email.");
+            return "Signup";
+        }
+
+        // ✅ FIX: Basic field validation
+        if (userEntity.getFirstName() == null || userEntity.getFirstName().trim().isEmpty() ||
+            userEntity.getLastName()  == null || userEntity.getLastName().trim().isEmpty()) {
+            model.addAttribute("signupError", "First name and last name are required.");
+            return "Signup";
+        }
+
+        if (userEntity.getPassword() == null || userEntity.getPassword().length() < 8) {
+            model.addAttribute("signupError", "Password must be at least 8 characters.");
+            return "Signup";
+        }
+
+        // Upload profile picture if provided
         if (picFile != null && !picFile.isEmpty()) {
             try {
-                Map map = cloudinary.uploader()
-                            .upload(picFile.getBytes(), null);
-                userEntity.setProfilePic(
-                    map.get("secure_url").toString());
+                Map map = cloudinary.uploader().upload(picFile.getBytes(), null);
+                userEntity.setProfilePic(map.get("secure_url").toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -69,10 +93,12 @@ public class SessionController {
         userEntity.setCreatedAt(LocalDate.now());
         userRepository.save(userEntity);
 
+        // ✅ FIX: Pass success message to Login page
+        model.addAttribute("success", "Account created successfully! Please login.");
         return "Login";
     }
 
-    // ── Login ──────────────────────────────────────────────
+    // ── Login (with error message) ─────────────────────────
 
     @PostMapping("/userlogin")
     public String login(
@@ -81,13 +107,28 @@ public class SessionController {
             HttpSession session,
             Model model) {
 
-        Optional<UserEntity> op = userRepository.findByEmail(email);
+        // ✅ FIX: Server-side input validation
+        if (email == null || email.trim().isEmpty()) {
+            model.addAttribute("error", "Please enter your email address.");
+            return "Login";
+        }
+        if (password == null || password.isEmpty()) {
+            model.addAttribute("error", "Please enter your password.");
+            return "Login";
+        }
+
+        Optional<UserEntity> op = userRepository.findByEmail(email.trim());
 
         if (op.isPresent()) {
             UserEntity dbUser = op.get();
 
+            // Check if account is active
+            if (!dbUser.getActive()) {
+                model.addAttribute("error", "Your account has been deactivated. Please contact admin.");
+                return "Login";
+            }
+
             if (dbUser.getPassword().equals(password)) {
-                // Save user in session
                 session.setAttribute("loggedUser", dbUser);
 
                 // Role-based redirect
@@ -101,7 +142,7 @@ public class SessionController {
             }
         }
 
-        // Wrong credentials
+        // ✅ FIX: Clear error message shown in Login.jsp via model attribute
         model.addAttribute("error", "Invalid email or password. Please try again.");
         return "Login";
     }
@@ -112,22 +153,5 @@ public class SessionController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/Home";
-    }
-
-    // ── Authenticate (purana — rakh sakte ho ya hata sakte ho) ──
-
-    @PostMapping("authenticate")
-    public String Authenticate(String email, String password, HttpSession session) {
-        Optional<UserEntity> op = userRepository.findByEmail(email);
-        if (op.isPresent()) {
-            UserEntity dbUser = op.get();
-            if (dbUser.getPassword().equals(password)) {
-                session.setAttribute("loggedUser", dbUser);
-                if ("Admin".equals(dbUser.getRole()))       return "redirect:/admin-dashboard";
-                else if ("Participant".equals(dbUser.getRole())) return "redirect:Home";
-                else if ("Judge".equals(dbUser.getRole()))  return "redirect:/judge-dashboard";
-            }
-        }
-        return "Login";
     }
 }
